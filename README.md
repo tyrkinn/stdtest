@@ -10,7 +10,7 @@ However, I've personally encountered cases where these examples were outdated.
 With `stdtest`, you can keep CLI usage examples in your repo, but now with proofs that they work.
 You can even run stdtest for example in your build pipeline to verify that all examples stay up to date. 
 
-And in the end, it's just a minimalistic test engine for CLI with property-based testing support and other useful features.
+And in the end, it's just a minimalistic test engine for CLI with property-based testing support and other.
 
 ## Usage
 
@@ -61,6 +61,14 @@ FAILED "Addition with negative number":
     And then run it with 
 
     `stdtest --prop=100` where `prop` flag indicates property based testing usage and takes number of random tests executed
+
+- [ ] Pass values to cli through stdin
+
+    Possible implementation:
+
+    ```text
+    first-word <| "Hello World" -> Hello
+    ```
 
 - [ ] Specify executable relative or global location 
 
