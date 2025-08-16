@@ -36,6 +36,7 @@ FAILED "Addition with negative number":
 ## Roadmap
 
 - [ ] Implement Property-Based Tests feature
+
     Possible implementation:
 
     ```text
@@ -52,6 +53,7 @@ FAILED "Addition with negative number":
     `stdtest --prop=100` where `prop` flag indicates property based testing usage and takes number of random tests executed
 
 - [ ] Specify executable relative or global location 
+
     Possible implementation:
 
     ```text
@@ -63,6 +65,7 @@ FAILED "Addition with negative number":
     ```
 
 - [ ] Add exit code and stderr message testing possibilities
+
     Possible implementation (here we have divide cli):
 
     ```text
