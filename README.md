@@ -2,6 +2,16 @@
 
 Now it's under active development and not production ready yet
 
+## Motivation 
+
+I've noticed, that many CLI projects and even non-CLI ones include examples like this `cli args -> output` in their README to demonstrate how the program works.
+
+However, I've personally encountered cases where these examples were outdated.
+With `stdtest`, you can keep CLI usage examples in your repo, but now with proofs that they work.
+You can even run stdtest for example in your build pipeline to verify that all examples stay up to date. 
+
+And in the end, it's just a minimalistic test engine for CLI with property-based testing support and other useful features.
+
 ## Usage
 
 1. Create `.stdtest` file in your project root
