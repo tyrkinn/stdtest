@@ -1,7 +1,7 @@
 package tokenizer
 
 import (
-	"bufio"
+	"errors"
 	"io"
 	"strconv"
 	"unicode"
@@ -9,13 +9,18 @@ import (
 	"github.com/tyrkinn/stdtest/internal/language"
 )
 
+type runeReader interface {
+	ReadRune() (rune, int, error)
+	UnreadRune() error
+}
+
 type Tokenizer struct {
 	position     uint
 	tokens       []language.Token
-	sourceReader *bufio.Reader
+	sourceReader runeReader
 }
 
-func New(reader *bufio.Reader) Tokenizer {
+func New(reader runeReader) Tokenizer {
 	return Tokenizer{
 		sourceReader: reader,
 		position:     0,
@@ -37,7 +42,7 @@ func (t *Tokenizer) readNumber(firstRune rune) (string, error) {
 	acc[0] = firstRune
 	for {
 		r, err := t.readNext()
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			return string(acc), nil
 		}
 		if err != nil {
@@ -60,7 +65,7 @@ func (t *Tokenizer) readIdentifier(firstRune rune) (string, error) {
 	acc[0] = firstRune
 	for {
 		r, err := t.readNext()
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			return string(acc), nil
 		}
 		if err != nil {
@@ -82,7 +87,7 @@ func (t *Tokenizer) ScanTokens() ([]language.Token, error) {
 	for {
 		pos := t.position
 		r, err := t.readNext()
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			return t.tokens, nil
 		}
 		if err != nil {
