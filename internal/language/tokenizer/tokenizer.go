@@ -2,22 +2,16 @@ package tokenizer
 
 import (
 	"bufio"
+	"io"
 	"strconv"
 	"unicode"
 
 	"github.com/tyrkinn/stdtest/internal/language"
 )
 
-type Token struct {
-	_type    language.TokenType
-	lexeme   string
-	literal  any
-	position uint
-}
-
 type Tokenizer struct {
 	position     uint
-	tokens       []Token
+	tokens       []language.Token
 	sourceReader *bufio.Reader
 }
 
@@ -25,12 +19,8 @@ func New(reader *bufio.Reader) Tokenizer {
 	return Tokenizer{
 		sourceReader: reader,
 		position:     0,
-		tokens:       make([]Token, 0, 32),
+		tokens:       make([]language.Token, 0, 32),
 	}
-}
-
-func (t *Tokenizer) isEnd() bool {
-	return t.position >= uint(t.sourceReader.Size())
 }
 
 func (t *Tokenizer) readNext() (rune, error) {
@@ -46,10 +36,10 @@ func (t *Tokenizer) readNumber(firstRune rune) (string, error) {
 	acc := make([]rune, 1, 8)
 	acc[0] = firstRune
 	for {
-		if t.isEnd() {
+		r, err := t.readNext()
+		if err == io.EOF {
 			return string(acc), nil
 		}
-		r, err := t.readNext()
 		if err != nil {
 			return "", err
 		}
@@ -58,6 +48,7 @@ func (t *Tokenizer) readNumber(firstRune rune) (string, error) {
 			if err != nil {
 				return "", err
 			}
+			t.position--
 			return string(acc), nil
 		}
 		acc = append(acc, r)
@@ -68,10 +59,10 @@ func (t *Tokenizer) readIdentifier(firstRune rune) (string, error) {
 	acc := make([]rune, 1, 8)
 	acc[0] = firstRune
 	for {
-		if t.isEnd() {
+		r, err := t.readNext()
+		if err == io.EOF {
 			return string(acc), nil
 		}
-		r, err := t.readNext()
 		if err != nil {
 			return "", err
 		}
@@ -80,25 +71,30 @@ func (t *Tokenizer) readIdentifier(firstRune rune) (string, error) {
 			if err != nil {
 				return "", err
 			}
+			t.position--
 			return string(acc), nil
 		}
 		acc = append(acc, r)
 	}
 }
 
-func (t *Tokenizer) ScanTokens() ([]Token, error) {
+func (t *Tokenizer) ScanTokens() ([]language.Token, error) {
 	for {
-		if t.isEnd() {
+		pos := t.position
+		r, err := t.readNext()
+		if err == io.EOF {
 			return t.tokens, nil
 		}
-
-		r, err := t.readNext()
 		if err != nil {
 			return nil, err
 		}
 
-		if unicode.IsSpace(r) {
+		if r == ' ' || r == '\t' {
 			continue
+		}
+
+		if r == '\n' {
+			t.tokens = append(t.tokens, language.Token{Type: language.NEWLINE, Lexeme: "\n", Literal: nil, Position: pos})
 		}
 
 		if unicode.IsDigit(r) {
@@ -110,7 +106,7 @@ func (t *Tokenizer) ScanTokens() ([]Token, error) {
 			if err != nil {
 				return nil, err
 			}
-			t.tokens = append(t.tokens, Token{_type: language.Number, lexeme: numberString, literal: number, position: t.position})
+			t.tokens = append(t.tokens, language.Token{Type: language.Number, Lexeme: numberString, Literal: number, Position: pos})
 		}
 
 		if unicode.IsLetter(r) || r == '_' {
@@ -118,7 +114,7 @@ func (t *Tokenizer) ScanTokens() ([]Token, error) {
 			if err != nil {
 				return nil, err
 			}
-			t.tokens = append(t.tokens, Token{_type: language.Identifier, lexeme: identifier, literal: nil, position: t.position})
+			t.tokens = append(t.tokens, language.Token{Type: language.Identifier, Lexeme: identifier, Literal: nil, Position: pos})
 		}
 
 		if r == '-' {
@@ -127,14 +123,11 @@ func (t *Tokenizer) ScanTokens() ([]Token, error) {
 				return nil, err
 			}
 			if unicode.IsSpace(next) {
-				t.tokens = append(t.tokens, Token{_type: language.MUNIS, lexeme: string(r), literal: nil, position: t.position})
+				t.tokens = append(t.tokens, language.Token{Type: language.MUNIS, Lexeme: string(r), Literal: nil, Position: pos})
 			} else if next == '>' {
-				t.tokens = append(t.tokens, Token{_type: language.ASSERT, lexeme: string(r), literal: nil, position: t.position})
+				t.tokens = append(t.tokens, language.Token{Type: language.ASSERT, Lexeme: "->", Literal: nil, Position: pos})
 			}
 		}
 
-		if err != nil {
-			return nil, err
-		}
 	}
 }

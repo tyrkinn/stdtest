@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/tyrkinn/stdtest/internal/language"
 	"github.com/tyrkinn/stdtest/internal/language/tokenizer"
 )
 
@@ -22,5 +23,10 @@ func main() {
 	reader := bufio.NewReader(file)
 	tokenizer := tokenizer.New(reader)
 	tokens, err := tokenizer.ScanTokens()
-	fmt.Println(tokens)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, t := range tokens {
+		fmt.Println(language.TokenToString(t))
+	}
 }
