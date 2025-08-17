@@ -1,4 +1,4 @@
-# `stdtest` Simplest possible CLI-testing CLI
+# `stdtest` Simplest possible CLI-testing tool
 
 Now it's under active development and not production ready yet
 
@@ -50,8 +50,8 @@ FAILED "Addition with negative number":
     Possible implementation:
 
     ```text
-    x := prop(int)
-    y := prop(int)
+    #let x := prop(int)
+    #let y := prop(int)
 
     add x  y -> add y x [Commutativity]
     add x  0 -> x       [Additivity]
