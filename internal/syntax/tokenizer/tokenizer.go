@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"unicode"
 
-	"github.com/tyrkinn/stdtest/internal/language"
+	"github.com/tyrkinn/stdtest/internal/syntax"
 )
 
 type runeReader interface {
@@ -16,7 +16,7 @@ type runeReader interface {
 
 type Tokenizer struct {
 	position     uint
-	tokens       []language.Token
+	tokens       []syntax.Token
 	sourceReader runeReader
 }
 
@@ -24,7 +24,7 @@ func New(reader runeReader) Tokenizer {
 	return Tokenizer{
 		sourceReader: reader,
 		position:     0,
-		tokens:       make([]language.Token, 0, 32),
+		tokens:       make([]syntax.Token, 0, 32),
 	}
 }
 
@@ -83,7 +83,7 @@ func (t *Tokenizer) readIdentifier(firstRune rune) (string, error) {
 	}
 }
 
-func (t *Tokenizer) ScanTokens() ([]language.Token, error) {
+func (t *Tokenizer) ScanTokens() ([]syntax.Token, error) {
 	for {
 		pos := t.position
 		r, err := t.readNext()
@@ -99,7 +99,7 @@ func (t *Tokenizer) ScanTokens() ([]language.Token, error) {
 		}
 
 		if r == '\n' {
-			t.tokens = append(t.tokens, language.Token{Type: language.NEWLINE, Lexeme: "\n", Literal: nil, Position: pos})
+			t.tokens = append(t.tokens, syntax.Token{Type: syntax.NEWLINE, Lexeme: "\n", Literal: nil, Position: pos})
 		}
 
 		if unicode.IsDigit(r) {
@@ -111,7 +111,7 @@ func (t *Tokenizer) ScanTokens() ([]language.Token, error) {
 			if err != nil {
 				return nil, err
 			}
-			t.tokens = append(t.tokens, language.Token{Type: language.Number, Lexeme: numberString, Literal: number, Position: pos})
+			t.tokens = append(t.tokens, syntax.Token{Type: syntax.Number, Lexeme: numberString, Literal: number, Position: pos})
 		}
 
 		if unicode.IsLetter(r) || r == '_' {
@@ -119,7 +119,7 @@ func (t *Tokenizer) ScanTokens() ([]language.Token, error) {
 			if err != nil {
 				return nil, err
 			}
-			t.tokens = append(t.tokens, language.Token{Type: language.Identifier, Lexeme: identifier, Literal: nil, Position: pos})
+			t.tokens = append(t.tokens, syntax.Token{Type: syntax.Identifier, Lexeme: identifier, Literal: nil, Position: pos})
 		}
 
 		if r == '-' {
@@ -127,10 +127,14 @@ func (t *Tokenizer) ScanTokens() ([]language.Token, error) {
 			if err != nil {
 				return nil, err
 			}
-			if unicode.IsSpace(next) {
-				t.tokens = append(t.tokens, language.Token{Type: language.MUNIS, Lexeme: string(r), Literal: nil, Position: pos})
-			} else if next == '>' {
-				t.tokens = append(t.tokens, language.Token{Type: language.ASSERT, Lexeme: "->", Literal: nil, Position: pos})
+			if next == '>' {
+				t.tokens = append(t.tokens, syntax.Token{Type: syntax.ASSERT, Lexeme: "->", Literal: nil, Position: pos})
+			} else {
+				t.tokens = append(t.tokens, syntax.Token{Type: syntax.MUNIS, Lexeme: string(r), Literal: nil, Position: pos})
+				err = t.sourceReader.UnreadRune()
+				if err != nil {
+					return nil, err
+				}
 			}
 		}
 
