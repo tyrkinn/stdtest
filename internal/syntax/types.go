@@ -13,24 +13,24 @@ const (
 	Number
 
 	ASSERT
-	MUNIS
 	NEWLINE
+	EOF
 )
 
-func TokenTypeToString(tt TokenType) string {
+func (tt TokenType) String() string {
 	switch tt {
 	case ASSERT:
 		return "ASSERT"
 	case Identifier:
 		return "IDENTIFIER"
-	case MUNIS:
-		return "MINUS"
 	case Number:
 		return "NUMBER"
 	case String:
 		return "STRING"
 	case NEWLINE:
 		return "NEWLINE"
+	case EOF:
+		return "EOF"
 	default:
 		panic(fmt.Sprintf("unexpected language.TokenType: %#v", tt))
 	}
@@ -43,6 +43,6 @@ type Token struct {
 	Position uint
 }
 
-func TokenToString(t Token) string {
-	return fmt.Sprintf("{%s, %s :at %d}", TokenTypeToString(t.Type), strconv.Quote(t.Lexeme), t.Position)
+func (t Token) String() string {
+	return fmt.Sprintf("{%s, %s :at %d}", t.Type.String(), strconv.Quote(t.Lexeme), t.Position)
 }
